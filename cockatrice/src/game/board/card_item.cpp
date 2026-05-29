@@ -15,6 +15,7 @@
 #include <../../client/settings/card_counter_settings.h>
 #include <QApplication>
 #include <QGraphicsSceneMouseEvent>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QPainter>
 #include <libcockatrice/card/card_info.h>
@@ -498,6 +499,17 @@ void CardItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         handleClickedToPlay(event->modifiers().testFlag(Qt::ShiftModifier));
     }
     event->accept();
+}
+
+void CardItem::keyPressEvent(QKeyEvent *event)
+{
+    if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && isSelected() &&
+        SettingsCache::instance().getDoubleClickToPlay()) {
+        handleClickedToPlay(event->modifiers().testFlag(Qt::ShiftModifier));
+        event->accept();
+    } else {
+        AbstractCardItem::keyPressEvent(event);
+    }
 }
 
 bool CardItem::animationEvent()
