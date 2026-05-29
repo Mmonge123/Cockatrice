@@ -5,6 +5,7 @@
 #include "../game_graphics/zones/view_zone.h"
 #include "../game_graphics/zones/view_zone_widget.h"
 #include "board/card_item.h"
+#include "keyboard_card_navigator.h"
 #include "phases_toolbar.h"
 #include "player/player_graphics_item.h"
 #include "player/player_logic.h"
@@ -28,9 +29,10 @@
  * Finally, calls rearrange() to layout players initially.
  */
 GameScene::GameScene(PhasesToolbar *_phasesToolbar, QObject *parent)
-    : QGraphicsScene(parent), phasesToolbar(_phasesToolbar), viewSize(QSize()), playerRotation(0)
+    : QGraphicsScene(parent), phasesToolbar(_phasesToolbar), viewSize(QSize()), playerRotation(0), cardNavigator(nullptr)
 {
     animationTimer = new QBasicTimer;
+    cardNavigator = new KeyboardCardNavigator(nullptr);
     addItem(phasesToolbar);
     connect(&SettingsCache::instance(), &SettingsCache::minPlayersForMultiColumnLayoutChanged, this,
             &GameScene::rearrange);
@@ -41,6 +43,7 @@ GameScene::GameScene(PhasesToolbar *_phasesToolbar, QObject *parent)
 GameScene::~GameScene()
 {
     delete animationTimer;
+    delete cardNavigator;
 
     // DO NOT call clearViews() here
     // clearViews calls close() on the zoneViews, which sends signals; sending signals in destructors leads to segfaults
@@ -442,6 +445,32 @@ void GameScene::clearArrowsForPlayer(int playerId)
         if (arrow->getPlayer()->getPlayerInfo()->getId() == playerId) {
             emit requestArrowDeletion(arrow->getId());
         }
+    }
+}
+
+void GameScene::handleLeftArrow()
+{
+    qWarning() << "[GameScene] handleLeftArrow CALLED";
+    if (cardNavigator) {
+        QKeyEvent event(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier);
+        cardNavigator->switchCardInHand(&event);
+    }
+}
+
+void GameScene::handleRightArrow()
+{
+    qWarning() << "[GameScene] handleRightArrow CALLED";
+    if (cardNavigator) {
+        QKeyEvent event(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier);
+        cardNavigator->switchCardInHand(&event);
+    }
+}
+
+void GameScene::setActivePlayer(PlayerLogic *player)
+{
+    if (cardNavigator) {
+        cardNavigator->setPlayer(player);
+        cardNavigator->setInHand(true);
     }
 }
 

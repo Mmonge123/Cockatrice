@@ -24,14 +24,26 @@ bool KeySignals::eventFilter(QObject * /*object*/, QEvent *event)
 
             break;
         case Qt::Key_Right:
+            qWarning() << "[KeySignals] Qt::Key_Right detected";
             if (kevent->modifiers() & Qt::ShiftModifier) {
+                qWarning() << "[KeySignals] Emitting onShiftRight";
                 emit onShiftRight();
+            } else {
+                qWarning() << "[KeySignals] Emitting onRightArrow";
+                emit onRightArrow();
+                return true;
             }
 
             break;
         case Qt::Key_Left:
+            qWarning() << "[KeySignals] Qt::Key_Left detected";
             if (kevent->modifiers() & Qt::ShiftModifier) {
+                qWarning() << "[KeySignals] Emitting onShiftLeft";
                 emit onShiftLeft();
+            } else {
+                qWarning() << "[KeySignals] Emitting onLeftArrow";
+                emit onLeftArrow();
+                return true; 
             }
 
             break;

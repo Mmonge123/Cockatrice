@@ -229,6 +229,11 @@ public:
 
     void setZoneId(int _zoneId);
 
+    /**
+     * Hovers the first card in the player's hand at the start of a round.
+     */
+    void hoverFirstCardInHand();
+
 private:
     AbstractGame *game;
     PlayerInfo *playerInfo;

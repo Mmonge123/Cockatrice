@@ -23,6 +23,7 @@ class CardItem;
 class ServerInfo_Card;
 class PhasesToolbar;
 class QBasicTimer;
+class KeyboardCardNavigator;
 
 /**
  * @class GameScene
@@ -52,6 +53,7 @@ private:
     QBasicTimer *animationTimer;                        ///< Timer for card animations
     QSet<CardItem *> cardsToAnimate;                    ///< Cards currently animating
     int playerRotation;                                 ///< Rotation offset for player layout
+    KeyboardCardNavigator *cardNavigator;               ///< Handles keyboard-based card navigation
 
     /**
      * @brief Updates which card is currently hovered based on scene coordinates.
@@ -206,6 +208,13 @@ public slots:
     void onArrowDeleteRequested(int arrowId);
     void onCardZoneChanged(CardItem *card, bool sameZone);
     void clearArrowsForPlayer(int playerId);
+    
+    /** @brief Handles left arrow key for card navigation. */
+    void handleLeftArrow();
+    /** @brief Handles right arrow key for card navigation. */
+    void handleRightArrow();
+    /** @brief Sets the active player for keyboard navigation. */
+    void setActivePlayer(PlayerLogic *player);
 
 protected:
     /** @brief Handles hover updates. */

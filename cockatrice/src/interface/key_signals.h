@@ -28,6 +28,8 @@ signals:
     void onCtrlAltRBracket();
     void onShiftS();
     void onCtrlC();
+    void onLeftArrow();
+    void onRightArrow();
 
 protected:
     bool eventFilter(QObject *, QEvent *event) override;
