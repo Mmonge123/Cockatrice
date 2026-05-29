@@ -83,6 +83,7 @@ void KeyboardCardNavigator::switchCardInHand(QKeyEvent *event)
         CardItem *newCard = handCards[newIndex];
         if (newCard) {
             newCard->setHovered(true);
+            newCard->setFocus();
             // Force update of new card's area
             if (newCard->scene()) {
                 newCard->scene()->update(newCard->sceneBoundingRect());

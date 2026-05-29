@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <libcockatrice/card/database/card_database.h>
 #include <libcockatrice/card/database/card_database_manager.h>
+#include <QKeyEvent>
 
 AbstractCardItem::AbstractCardItem(QGraphicsItem *parent, const CardRef &cardRef, PlayerLogic *_owner, int _id)
     : ArrowTarget(_owner, parent), id(_id), cardRef(cardRef), tapped(false), facedown(false), tapAngle(0),
@@ -19,6 +20,7 @@ AbstractCardItem::AbstractCardItem(QGraphicsItem *parent, const CardRef &cardRef
 {
     setCursor(Qt::OpenHandCursor);
     setFlag(ItemIsSelectable);
+    setFlag(ItemIsFocusable);
     setCacheMode(DeviceCoordinateCache);
 
     connect(&SettingsCache::instance(), &SettingsCache::displayCardNamesChanged, this, [this] { update(); });
@@ -346,4 +348,25 @@ QVariant AbstractCardItem::itemChange(QGraphicsItem::GraphicsItemChange change, 
     } else {
         return ArrowTarget::itemChange(change, value);
     }
+}
+
+
+void AbstractCardItem::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+        qWarning() << "CardItem received Enter key press event";
+        if (event->modifiers() & Qt::AltModifier) {
+            emit cardShiftClicked(cardRef.name);
+        } else if (event->modifiers() & Qt::ControlModifier) {
+            setSelected(!isSelected());
+        } else if (!isSelected() && isHovered) {
+            qWarning() << "CardItem received Enter key press event while hovered";
+            scene()->clearSelection();
+            setSelected(true);
+        } 
+        event->accept();
+    } else {
+        ArrowTarget::keyPressEvent(event);
+    }
+    
 }
