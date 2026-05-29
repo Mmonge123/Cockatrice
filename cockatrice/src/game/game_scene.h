@@ -173,6 +173,9 @@ public:
     /** @brief Updates hovered card highlighting. */
     void updateHoveredCard(CardItem *newCard);
 
+    /** @brief Gets the keyboard card navigator. */
+    KeyboardCardNavigator *getCardNavigator() const { return cardNavigator; }
+
     /** @brief Registers a card for animation updates. */
     void registerAnimationItem(AbstractCardItem *card);
 

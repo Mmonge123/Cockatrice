@@ -39,6 +39,8 @@ public:
      * Call this when hand composition changes.
      */
     void validateHoveredCard();
+    void setCurrentlyHoveredCardIndex(int index);
+    void UnhoverCurrentCard();
 };
 
 #endif 

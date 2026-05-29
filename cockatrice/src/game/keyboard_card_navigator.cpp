@@ -15,7 +15,7 @@ void KeyboardCardNavigator::setInHand(bool _inHand)
 
 void KeyboardCardNavigator::switchCardInHand(QKeyEvent *event)
 {
-    
+
     // Don't check inHand flag - it's timing-dependent. Just check if we have valid player and cards.
     if (!playerLogic) {
         qWarning() << "[KeyNav] playerLogic is NULL";
@@ -99,4 +99,34 @@ void KeyboardCardNavigator::switchCardInHand(QKeyEvent *event)
 void KeyboardCardNavigator::setPlayer(PlayerLogic *player)
 {
     playerLogic = player;
+}
+
+
+void KeyboardCardNavigator::setCurrentlyHoveredCardIndex(int index)
+{
+    currentlyHoveredCardIndex = index;
+}
+
+void KeyboardCardNavigator::UnhoverCurrentCard()
+{
+    if (!playerLogic) {
+        return;
+    }
+    
+    HandZoneLogic *handZone = playerLogic->getHandZone();
+    if (!handZone) {
+        return;
+    }
+    
+    const CardList &handCards = handZone->getCards();
+    if (currentlyHoveredCardIndex >= 0 && currentlyHoveredCardIndex < handCards.size()) {
+        CardItem *currentCard = handCards[currentlyHoveredCardIndex];
+        if (currentCard) {
+            currentCard->setHovered(false);
+            // Force update of current card's area
+            if (currentCard->scene()) {
+                currentCard->scene()->update(currentCard->sceneBoundingRect());
+            }
+        }
+    }
 }

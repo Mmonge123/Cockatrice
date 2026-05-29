@@ -11,6 +11,7 @@
 #include "../board/card_list.h"
 #include "../board/counter_general.h"
 #include "../game_scene.h"
+#include "../keyboard_card_navigator.h"
 #include "player_actions.h"
 #include "player_target.h"
 
@@ -358,12 +359,14 @@ void PlayerLogic::hoverFirstCardInHand()
     if (!handZone) {
         return;
     }
-
     const CardList &handCards = handZone->getCards();
     if (!handCards.isEmpty()) {
         CardItem *firstCard = handCards.at(0);
         if (firstCard) {
             firstCard->setHovered(true);
+            getGameScene()->getCardNavigator()->UnhoverCurrentCard();
+            getGameScene()->getCardNavigator()->setCurrentlyHoveredCardIndex(0);
+            
         }
     }
 }
