@@ -14,7 +14,9 @@
 
 #include <../../client/settings/card_counter_settings.h>
 #include <QApplication>
+#include <QCursor>
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsView>
 #include <QKeyEvent>
 #include <QMenu>
 #include <QPainter>
@@ -506,6 +508,25 @@ void CardItem::keyPressEvent(QKeyEvent *event)
     if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && isSelected() &&
         SettingsCache::instance().getDoubleClickToPlay()) {
         handleClickedToPlay(event->modifiers().testFlag(Qt::ShiftModifier));
+        event->accept();
+    } else if (event->key() == Qt::Key_Space && getIsHovered()) {
+        if (QWidget *popup = QApplication::activePopupWidget()) {
+            popup->close();
+            event->accept();
+            return;
+        }
+        
+        if (owner != nullptr) {
+            owner->getGame()->setActiveCard(this);
+            if (QMenu *cardMenu = owner->getPlayerMenu()->updateCardMenu(this)) {
+                QPointF scenePos = sceneBoundingRect().center();
+                if (!scene()->views().isEmpty()) {
+                    QGraphicsView *view = scene()->views().first();
+                    QPoint screenPos = view->mapToGlobal(view->mapFromScene(scenePos));
+                    cardMenu->popup(screenPos);
+                }
+            }
+        }
         event->accept();
     } else {
         AbstractCardItem::keyPressEvent(event);

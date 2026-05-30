@@ -1,7 +1,7 @@
 #include "keyboard_card_navigator.h"
 #include "player/player_logic.h"
 #include "board/card_item.h"
-
+#include <QApplication>
 #include <QKeyEvent>
 KeyboardCardNavigator::KeyboardCardNavigator(PlayerLogic *player)
     : inHand(false), currentlyHoveredCardIndex(-1), playerLogic(player)
@@ -20,6 +20,9 @@ void KeyboardCardNavigator::switchCardInHand(QKeyEvent *event)
     if (!playerLogic) {
         qWarning() << "[KeyNav] playerLogic is NULL";
         return;
+    }
+    if (QApplication::activePopupWidget()) {
+        return; 
     }
     
     HandZoneLogic *handZone = playerLogic->getHandZone();
