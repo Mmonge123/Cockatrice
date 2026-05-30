@@ -15,12 +15,16 @@
 class PlayerLogic;
 class CardItem;
 class QKeyEvent;
+class ArrowItem;
 
 class KeyboardCardNavigator
 {
 private:
     bool inHand;
-    int currentlyHoveredCardIndex = -1; ///< Index of the currently hovered card
+    int currentlyHoveredCardIndex = -1;
+    bool isArrowModeActive;
+    CardItem *arrowOriginCard;
+    ArrowItem *previewArrow;
     PlayerLogic *playerLogic;
     
     /**
@@ -41,6 +45,14 @@ public:
     void validateHoveredCard();
     void setCurrentlyHoveredCardIndex(int index);
     void UnhoverCurrentCard();
+    void createArrow(CardItem* targetCard);
+    void createTempArrow(CardItem* targetCard);
+    void startArrowMode(CardItem* originCard);
+    void cancelArrowMode();
+    bool isArrowModeActiveVar() const
+    {
+        return isArrowModeActive;
+    };
 };
 
 #endif 

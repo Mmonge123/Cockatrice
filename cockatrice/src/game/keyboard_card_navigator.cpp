@@ -1,6 +1,8 @@
 #include "keyboard_card_navigator.h"
 #include "player/player_logic.h"
 #include "board/card_item.h"
+#include "board/arrow_item.h"
+#include "../../client/settings/cache_settings.h"
 #include <QApplication>
 #include <QKeyEvent>
 KeyboardCardNavigator::KeyboardCardNavigator(PlayerLogic *player)
@@ -91,6 +93,9 @@ void KeyboardCardNavigator::switchCardInHand(QKeyEvent *event)
             if (newCard->scene()) {
                 newCard->scene()->update(newCard->sceneBoundingRect());
             }
+            if (isArrowModeActive) {
+            createTempArrow(newCard);
+            }
             qWarning() << "[KeyNav] SUCCESS - hovering card at index" << newIndex;
         } else {
             qWarning() << "[KeyNav] ERROR - card at index" << newIndex << "is NULL";
@@ -133,4 +138,65 @@ void KeyboardCardNavigator::UnhoverCurrentCard()
             }
         }
     }
+}
+
+void KeyboardCardNavigator::createTempArrow(CardItem* targetCard) {
+    if (!isArrowModeActive || !arrowOriginCard || !targetCard || !playerLogic) return;
+
+    if (previewArrow) {
+        delete previewArrow;
+        previewArrow = nullptr;
+    }
+
+    previewArrow = new ArrowItem(playerLogic, -1, arrowOriginCard, targetCard, Qt::red);
+    if (arrowOriginCard->scene()) {
+        arrowOriginCard->scene()->addItem(previewArrow);
+    }
+}
+void KeyboardCardNavigator::createArrow(CardItem* targetCard)
+{
+    if (!isArrowModeActive || !arrowOriginCard || !targetCard || !playerLogic) return;
+
+
+    if (previewArrow) {
+        delete previewArrow;
+        previewArrow = nullptr;
+    }
+    isArrowModeActive = false;
+
+
+    if (arrowOriginCard == targetCard) {
+        arrowOriginCard = nullptr;
+        return; 
+    }
+
+    ArrowItem::sendCreateArrowCommand(playerLogic, arrowOriginCard, targetCard, Qt::red);
+    
+    arrowOriginCard = nullptr;
+}
+
+// In keyboard_card_navigator.cpp
+
+void KeyboardCardNavigator::startArrowMode(CardItem* originCard)
+{
+    if (!originCard || !originCard->scene() || !playerLogic) return;
+    
+    isArrowModeActive = true;
+    arrowOriginCard = originCard;
+
+    // Create a temporary visual arrow pointing to itself so the user knows it worked
+    createTempArrow(originCard);
+    
+    qWarning() << "[KeyNav] Arrow mode STARTED.";
+}
+
+void KeyboardCardNavigator::cancelArrowMode()
+{
+    if (previewArrow) {
+        delete previewArrow;
+        previewArrow = nullptr;
+    }
+    isArrowModeActive = false;
+    arrowOriginCard = nullptr;
+    qWarning() << "[KeyNav] Arrow mode CANCELLED.";
 }

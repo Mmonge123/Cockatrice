@@ -11,6 +11,7 @@
 #include "../zones/view_zone_logic.h"
 #include "arrow_item.h"
 #include "card_drag_item.h"
+#include "../keyboard_card_navigator.h"
 
 #include <../../client/settings/card_counter_settings.h>
 #include <QApplication>
@@ -505,6 +506,40 @@ void CardItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
 void CardItem::keyPressEvent(QKeyEvent *event)
 {
+
+    auto *gameScene = static_cast<GameScene *>(scene());
+    KeyboardCardNavigator *navigator = gameScene ? gameScene->getCardNavigator() : nullptr;
+
+
+    if (event->key() == Qt::Key_Escape && navigator && navigator->isArrowModeActiveVar()) {
+        navigator->cancelArrowMode();
+        event->accept();
+        qWarning() << "Arrow mode cancelled from CardItem with id:" << id;
+        return;
+    }
+
+    if (event->key() == Qt::Key_A && (event->modifiers() & Qt::ShiftModifier) && getIsHovered()) {
+        qWarning() << "Starting arrow mode from CardItem with id:" << id;
+        if (navigator) {
+            qWarning() << "Navigator found, starting arrow mode.";
+            scene()->clearSelection();
+            setSelected(true);
+            navigator->startArrowMode(this);
+            event->accept();
+            return;
+        }
+    }
+
+    if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && 
+        navigator && navigator->isArrowModeActiveVar() && getIsHovered()) {
+        
+        qWarning() << "Finalizing arrow mode from CardItem with id:" << id;
+        navigator->createArrow(this);
+        navigator->cancelArrowMode();
+        event->accept();
+        return; 
+    }
+    
     if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && isSelected() &&
         SettingsCache::instance().getDoubleClickToPlay()) {
         handleClickedToPlay(event->modifiers().testFlag(Qt::ShiftModifier));
