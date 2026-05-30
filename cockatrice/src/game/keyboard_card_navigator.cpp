@@ -6,40 +6,37 @@
 #include <QApplication>
 #include <QKeyEvent>
 KeyboardCardNavigator::KeyboardCardNavigator(PlayerLogic *player)
-    : inHand(false), currentlyHoveredCardIndex(-1), playerLogic(player)
+    : currentZone(nullptr), currentlyHoveredCardIndex(-1), isArrowModeActive(false), arrowOriginCard(nullptr), previewArrow(nullptr), playerLogic(player)
 {
 }
 
-void KeyboardCardNavigator::setInHand(bool _inHand)
+void KeyboardCardNavigator::setCurrentZone(CardZoneLogic *zone)
 {
-    inHand = _inHand;
+    currentZone = zone;
 }
 
-void KeyboardCardNavigator::switchCardInHand(QKeyEvent *event)
+void KeyboardCardNavigator::switchCardInZone(QKeyEvent *event)
 {
-
     // Don't check inHand flag - it's timing-dependent. Just check if we have valid player and cards.
     if (!playerLogic) {
         qWarning() << "[KeyNav] playerLogic is NULL";
+        return;
+    }
+    if (!currentZone) {
+        qWarning() << "[KeyNav] currentZone is NULL";
         return;
     }
     if (QApplication::activePopupWidget()) {
         return; 
     }
     
-    HandZoneLogic *handZone = playerLogic->getHandZone();
-    if (!handZone) {
-        qWarning() << "[KeyNav] handZone is NULL";
-        return;
-    }
-    
-    const CardList &handCards = handZone->getCards();
-    if (handCards.isEmpty()) {
-        qWarning() << "[KeyNav] handCards is EMPTY";
+    const CardList &zoneCards = currentZone->getCards();
+    if (zoneCards.isEmpty()) {
+        qWarning() << "[KeyNav] zoneCards is EMPTY";
         return;
     }
     event->accept();
-    qWarning() << "[KeyNav] Hand size=" << handCards.size() << "index=" << currentlyHoveredCardIndex;
+    qWarning() << "[KeyNav] Zone size=" << zoneCards.size() << "index=" << currentlyHoveredCardIndex;
     
     // Check if this is an arrow key we care about
     int keyCode = event->key();
@@ -56,7 +53,7 @@ void KeyboardCardNavigator::switchCardInHand(QKeyEvent *event)
         qWarning() << "[KeyNav] INIT to 0";
     } else {
         // Validate current index is still in bounds
-        if (currentlyHoveredCardIndex >= handCards.size()) {
+        if (currentlyHoveredCardIndex >= zoneCards.size()) {
             qWarning() << "[KeyNav] Index out of bounds, reset to 0";
             currentlyHoveredCardIndex = 0;
             newIndex = 0;
@@ -64,15 +61,15 @@ void KeyboardCardNavigator::switchCardInHand(QKeyEvent *event)
         
         // Calculate movement
         if (keyCode == Qt::Key_Right) {
-            newIndex = (currentlyHoveredCardIndex + 1) % handCards.size();
+            newIndex = (currentlyHoveredCardIndex + 1) % zoneCards.size();
         } else {
-            newIndex = (currentlyHoveredCardIndex - 1 + handCards.size()) % handCards.size();
+            newIndex = (currentlyHoveredCardIndex - 1 + zoneCards.size()) % zoneCards.size();
         }
     }
     
     // Unhover old card
-    if (currentlyHoveredCardIndex >= 0 && currentlyHoveredCardIndex < handCards.size()) {
-        CardItem *oldCard = handCards[currentlyHoveredCardIndex];
+    if (currentlyHoveredCardIndex >= 0 && currentlyHoveredCardIndex < zoneCards.size()) {
+        CardItem *oldCard = zoneCards[currentlyHoveredCardIndex];
         if (oldCard) {
             oldCard->setHovered(false);
             // Force update of old card's area
@@ -84,8 +81,8 @@ void KeyboardCardNavigator::switchCardInHand(QKeyEvent *event)
     
     // Update index and hover new card
     currentlyHoveredCardIndex = newIndex;
-    if (newIndex >= 0 && newIndex < handCards.size()) {
-        CardItem *newCard = handCards[newIndex];
+    if (newIndex >= 0 && newIndex < zoneCards.size()) {
+        CardItem *newCard = zoneCards[newIndex];
         if (newCard) {
             newCard->setHovered(true);
             newCard->setFocus();
@@ -118,18 +115,13 @@ void KeyboardCardNavigator::setCurrentlyHoveredCardIndex(int index)
 
 void KeyboardCardNavigator::UnhoverCurrentCard()
 {
-    if (!playerLogic) {
+    if (!playerLogic || !currentZone) {
         return;
     }
     
-    HandZoneLogic *handZone = playerLogic->getHandZone();
-    if (!handZone) {
-        return;
-    }
-    
-    const CardList &handCards = handZone->getCards();
-    if (currentlyHoveredCardIndex >= 0 && currentlyHoveredCardIndex < handCards.size()) {
-        CardItem *currentCard = handCards[currentlyHoveredCardIndex];
+    const CardList &zoneCards = currentZone->getCards();
+    if (currentlyHoveredCardIndex >= 0 && currentlyHoveredCardIndex < zoneCards.size()) {
+        CardItem *currentCard = zoneCards[currentlyHoveredCardIndex];
         if (currentCard) {
             currentCard->setHovered(false);
             // Force update of current card's area

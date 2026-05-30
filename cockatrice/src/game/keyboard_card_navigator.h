@@ -20,7 +20,7 @@ class ArrowItem;
 class KeyboardCardNavigator
 {
 private:
-    bool inHand;
+    CardZoneLogic *currentZone;
     int currentlyHoveredCardIndex = -1;
     bool isArrowModeActive;
     CardItem *arrowOriginCard;
@@ -35,8 +35,8 @@ private:
     
 public:
     KeyboardCardNavigator(PlayerLogic *player = nullptr);
-    void setInHand(bool _inHand);
-    void switchCardInHand(QKeyEvent *event);
+    void setCurrentZone(CardZoneLogic *zone);
+    void switchCardInZone(QKeyEvent *event);
     void setPlayer(PlayerLogic *player);
     /**
      * @brief Validates and resets the hovered card if needed.
@@ -53,6 +53,7 @@ public:
     {
         return isArrowModeActive;
     };
+
 };
 
 #endif 

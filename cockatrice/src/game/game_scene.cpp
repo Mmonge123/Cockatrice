@@ -453,7 +453,7 @@ void GameScene::handleLeftArrow()
     qWarning() << "[GameScene] handleLeftArrow CALLED";
     if (cardNavigator) {
         QKeyEvent event(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier);
-        cardNavigator->switchCardInHand(&event);
+        cardNavigator->switchCardInZone(&event);
     }
 }
 
@@ -462,7 +462,7 @@ void GameScene::handleRightArrow()
     qWarning() << "[GameScene] handleRightArrow CALLED";
     if (cardNavigator) {
         QKeyEvent event(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier);
-        cardNavigator->switchCardInHand(&event);
+        cardNavigator->switchCardInZone(&event);
     }
 }
 
@@ -470,7 +470,7 @@ void GameScene::setActivePlayer(PlayerLogic *player)
 {
     if (cardNavigator) {
         cardNavigator->setPlayer(player);
-        cardNavigator->setInHand(true);
+        cardNavigator->setCurrentZone(player->getHandZone());
     }
 }
 
