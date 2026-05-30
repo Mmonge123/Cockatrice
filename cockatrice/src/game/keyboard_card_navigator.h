@@ -37,6 +37,7 @@ public:
     KeyboardCardNavigator(PlayerLogic *player = nullptr);
     void setCurrentZone(CardZoneLogic *zone);
     void switchCardInZone(QKeyEvent *event);
+    void switchZone(QKeyEvent *event);
     void setPlayer(PlayerLogic *player);
     /**
      * @brief Validates and resets the hovered card if needed.

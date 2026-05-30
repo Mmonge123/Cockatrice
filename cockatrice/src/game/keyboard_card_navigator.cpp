@@ -192,3 +192,59 @@ void KeyboardCardNavigator::cancelArrowMode()
     arrowOriginCard = nullptr;
     qWarning() << "[KeyNav] Arrow mode CANCELLED.";
 }
+
+
+void KeyboardCardNavigator::switchZone(QKeyEvent *event)
+{
+    if (!playerLogic) {
+        return;
+    }
+    if (QApplication::activePopupWidget()) {
+        return; 
+    }
+    
+    int keyCode = event->key();
+    if (keyCode != Qt::Key_Up && keyCode != Qt::Key_Down) {
+        return;
+    }
+    
+    event->accept();
+    // Build list with only the zones of interest
+    QList<CardZoneLogic *> zonesList;
+    
+    TableZoneLogic *tableZone = playerLogic->getTableZone();
+    StackZoneLogic *stackZone = playerLogic->getStackZone();
+    HandZoneLogic *handZone = playerLogic->getHandZone();
+    
+    if (tableZone) zonesList.append(tableZone);
+    if (stackZone) zonesList.append(stackZone);
+    if (handZone) zonesList.append(handZone);
+    
+    if (zonesList.isEmpty()) {
+        return;
+    }
+    
+    // Find current zone index
+    int currentZoneIndex = zonesList.indexOf(currentZone);
+    if (currentZoneIndex < 0) {
+        // If no current zone, start at first zone
+        currentZoneIndex = 0;
+    }
+    
+    // Calculate new zone index
+    int newZoneIndex = currentZoneIndex;
+    if (keyCode == Qt::Key_Down) {
+        newZoneIndex = (currentZoneIndex + 1) % zonesList.size();
+    } else if (keyCode == Qt::Key_Up) {
+        newZoneIndex = (currentZoneIndex - 1 + zonesList.size()) % zonesList.size();
+    }
+    
+    // Set the new zone
+    CardZoneLogic *newZone = zonesList[newZoneIndex];
+    setCurrentZone(newZone);
+    
+    // Reset card index since we're in a new zone
+    currentlyHoveredCardIndex = -1;
+    
+    qWarning() << "[KeyNav] Switched to zone:" << newZone->getName();
+}
