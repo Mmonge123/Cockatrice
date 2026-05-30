@@ -517,6 +517,8 @@ void CardItem::keyPressEvent(QKeyEvent *event)
         }
         
         if (owner != nullptr) {
+            scene()->clearSelection();
+            setSelected(true);
             owner->getGame()->setActiveCard(this);
             if (QMenu *cardMenu = owner->getPlayerMenu()->updateCardMenu(this)) {
                 QPointF scenePos = sceneBoundingRect().center();
