@@ -41,7 +41,14 @@ bool KeySignals::eventFilter(QObject * /*object*/, QEvent *event)
                 qWarning() << "[KeySignals] Emitting onShiftLeft";
                 emit onShiftLeft();
             } else {
-                qWarning() << "[KeySignals] Emitting onLeftArrow";
+            emit onRightArrow();
+            return true;
+        case Qt::Key_Up:
+            emit onUpArrow();
+            return true;
+        case Qt::Key_Down:
+            emit onDownArrow();
+            return true;
                 emit onLeftArrow();
                 return true; 
             }

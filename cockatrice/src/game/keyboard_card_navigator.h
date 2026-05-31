@@ -26,7 +26,6 @@ private:
     CardItem *arrowOriginCard;
     ArrowItem *previewArrow;
     PlayerLogic *playerLogic;
-    
     /**
      * @brief Gets hand cards sorted by visual position.
      * @return List of cards sorted by visual order (left-to-right for horizontal, top-to-bottom for vertical).
@@ -46,10 +45,12 @@ public:
     void validateHoveredCard();
     void setCurrentlyHoveredCardIndex(int index);
     void UnhoverCurrentCard();
+    void changeHoverCard(int cardIndex, bool hover);
     void createArrow(CardItem* targetCard);
     void createTempArrow(CardItem* targetCard);
     void startArrowMode(CardItem* originCard);
     void cancelArrowMode();
+    CardZoneLogic *findZoneWithCards(QList<CardZoneLogic *> &zonesList, int currentZoneIndex, bool upperZone);
     bool isArrowModeActiveVar() const
     {
         return isArrowModeActive;

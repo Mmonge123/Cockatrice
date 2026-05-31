@@ -17,7 +17,7 @@ void KeyboardCardNavigator::setCurrentZone(CardZoneLogic *zone)
 
 void KeyboardCardNavigator::switchCardInZone(QKeyEvent *event)
 {
-    // Don't check inHand flag - it's timing-dependent. Just check if we have valid player and cards.
+    // Check if we have a valid player and cards.
     if (!playerLogic) {
         return;
     }
@@ -30,6 +30,9 @@ void KeyboardCardNavigator::switchCardInZone(QKeyEvent *event)
 
     const CardList &zoneCards = currentZone->getCards();
     if (zoneCards.isEmpty()) {
+        // if the current zone is empty, try to force a zone change.
+        QKeyEvent event(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier);
+        KeyboardCardNavigator::switchZone(&event);
         return;
     }
     event->accept();
@@ -45,7 +48,9 @@ void KeyboardCardNavigator::switchCardInZone(QKeyEvent *event)
     bool isInitial = (currentlyHoveredCardIndex < 0);
 
     if (isInitial) {
-        newIndex = 0;
+        // If the first key pressed is the right, spawn the cursor at the first card
+        // Otherwise, spawn at the last card.
+        newIndex = keyCode == Qt::Key_Right ? 0 : zoneCards.size() - 1;
     } else {
         // Validate current index is still in bounds
         if (currentlyHoveredCardIndex >= zoneCards.size()) {
@@ -62,30 +67,27 @@ void KeyboardCardNavigator::switchCardInZone(QKeyEvent *event)
     }
 
     // Unhover old card
-    if (currentlyHoveredCardIndex >= 0 && currentlyHoveredCardIndex < zoneCards.size()) {
-        CardItem *oldCard = zoneCards[currentlyHoveredCardIndex];
-        if (oldCard) {
-            oldCard->setHovered(false);
-            // Force update of old card's area
-            if (oldCard->scene()) {
-                oldCard->scene()->update(oldCard->sceneBoundingRect());
-            }
-        }
-    }
+    KeyboardCardNavigator::changeHoverCard(currentlyHoveredCardIndex, false);
 
     // Update index and hover new card
     currentlyHoveredCardIndex = newIndex;
-    if (newIndex >= 0 && newIndex < zoneCards.size()) {
-        CardItem *newCard = zoneCards[newIndex];
-        if (newCard) {
-            newCard->setHovered(true);
-            newCard->setFocus();
+    KeyboardCardNavigator::changeHoverCard(newIndex, true);
+}
+
+void KeyboardCardNavigator::changeHoverCard(int cardIndex, bool hover)
+{
+    const CardList &zoneCards = currentZone->getCards();
+    if (cardIndex >= 0 && cardIndex < zoneCards.size()) {
+        CardItem *card = zoneCards[cardIndex];
+        if (card) {
+            card->setHovered(hover);
+            card->setFocus();
             // Force update of new card's area
-            if (newCard->scene()) {
-                newCard->scene()->update(newCard->sceneBoundingRect());
+            if (card->scene()) {
+                card->scene()->update(card->sceneBoundingRect());
             }
-            if (isArrowModeActive) {
-            createTempArrow(newCard);
+            if (isArrowModeActive && hover) {
+            createTempArrow(card);
             }
         }
     }
@@ -108,17 +110,7 @@ void KeyboardCardNavigator::UnhoverCurrentCard()
         return;
     }
 
-    const CardList &zoneCards = currentZone->getCards();
-    if (currentlyHoveredCardIndex >= 0 && currentlyHoveredCardIndex < zoneCards.size()) {
-        CardItem *currentCard = zoneCards[currentlyHoveredCardIndex];
-        if (currentCard) {
-            currentCard->setHovered(false);
-            // Force update of current card's area
-            if (currentCard->scene()) {
-                currentCard->scene()->update(currentCard->sceneBoundingRect());
-            }
-        }
-    }
+    changeHoverCard(currentlyHoveredCardIndex, false);
 }
 
 void KeyboardCardNavigator::createTempArrow(CardItem* targetCard) {
@@ -177,12 +169,29 @@ void KeyboardCardNavigator::cancelArrowMode()
     arrowOriginCard = nullptr;
 }
 
+CardZoneLogic *KeyboardCardNavigator::findZoneWithCards(QList<CardZoneLogic *> &zonesList, int currentZoneIndex, bool upperZone) {
+    CardZoneLogic *newZone;
+    int newZoneIndex = currentZoneIndex;
+    do {
+    // Calculate new zone index
+        if (upperZone) {
+            newZoneIndex = (newZoneIndex + 1) % zonesList.size();
+        } else {
+            newZoneIndex = (newZoneIndex - 1 + zonesList.size()) % zonesList.size();
+        }
+        newZone = zonesList[newZoneIndex];
+        qWarning() << "[GameScene] On zone..." << newZoneIndex << "with" << newZone->getCards().size() << "cards";
+    // Prevent switching zone if the others are empty
+    } while (newZoneIndex != currentZoneIndex && newZone->getCards().size() == 0);
+    return newZone;
+}
 
 void KeyboardCardNavigator::switchZone(QKeyEvent *event)
 {
     if (!playerLogic) {
         return;
     }
+
     if (QApplication::activePopupWidget()) {
         return;
     }
@@ -215,18 +224,19 @@ void KeyboardCardNavigator::switchZone(QKeyEvent *event)
         currentZoneIndex = 0;
     }
 
-    // Calculate new zone index
-    int newZoneIndex = currentZoneIndex;
-    if (keyCode == Qt::Key_Down) {
-        newZoneIndex = (currentZoneIndex + 1) % zonesList.size();
-    } else if (keyCode == Qt::Key_Up) {
-        newZoneIndex = (currentZoneIndex - 1 + zonesList.size()) % zonesList.size();
+    CardZoneLogic *newZone = KeyboardCardNavigator::findZoneWithCards(zonesList, currentZoneIndex, keyCode == Qt::Key_Up);
+
+    if (currentZone != newZone) {
+        // If the zone is to change and a card is selected, unselect it
+        changeHoverCard(currentlyHoveredCardIndex, false);
+
+        // Set the new zone
+        setCurrentZone(newZone);
+
+        // Reset card index since we're in a new zone
+        currentlyHoveredCardIndex = 0;
+
+        // The new zone has to have cards, hover and select the first one
+        changeHoverCard(currentlyHoveredCardIndex, true);
     }
-
-    // Set the new zone
-    CardZoneLogic *newZone = zonesList[newZoneIndex];
-    setCurrentZone(newZone);
-
-    // Reset card index since we're in a new zone
-    currentlyHoveredCardIndex = -1;
 }

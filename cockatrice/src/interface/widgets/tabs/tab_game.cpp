@@ -1161,6 +1161,8 @@ void TabGame::createPlayAreaWidget(bool bReplay)
     qApp->installEventFilter(keySignals);
     connect(keySignals, &KeySignals::onLeftArrow, scene, &GameScene::handleLeftArrow);
     connect(keySignals, &KeySignals::onRightArrow, scene, &GameScene::handleRightArrow);
+    connect(keySignals, &KeySignals::onUpArrow, scene, &GameScene::handleUpArrow);
+    connect(keySignals, &KeySignals::onDownArrow, scene, &GameScene::handleDownArrow);
     
     gameView = new GameView(scene);
 

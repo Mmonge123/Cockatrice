@@ -565,11 +565,6 @@ void CardItem::keyPressEvent(QKeyEvent *event)
             }
         }
         event->accept();
-    } else if (event->key() == Qt::Key_Up || event->key() == Qt::Key_Down) {
-        if (navigator) {
-            navigator->switchZone(event);
-        }
-        event->accept();
     } else {
         AbstractCardItem::keyPressEvent(event);
     }

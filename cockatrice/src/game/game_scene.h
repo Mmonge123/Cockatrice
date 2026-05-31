@@ -216,6 +216,10 @@ public slots:
     void handleLeftArrow();
     /** @brief Handles right arrow key for card navigation. */
     void handleRightArrow();
+    /** @brief Handles up arrow key for zone navigation. */
+    void handleUpArrow();
+    /** @brief Handles down arrow key for zone navigation. */
+    void handleDownArrow();
     /** @brief Sets the active player for keyboard navigation. */
     void setActivePlayer(PlayerLogic *player);
 

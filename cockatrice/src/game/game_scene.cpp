@@ -466,6 +466,24 @@ void GameScene::handleRightArrow()
     }
 }
 
+void GameScene::handleUpArrow()
+{
+    qWarning() << "[GameScene] handleUpArrow CALLED";
+    if (cardNavigator) {
+        QKeyEvent event(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier);
+        cardNavigator->switchZone(&event);
+    }
+}
+
+void GameScene::handleDownArrow()
+{
+    qWarning() << "[GameScene] handleDownArrow CALLED";
+    if (cardNavigator) {
+        QKeyEvent event(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier);
+        cardNavigator->switchZone(&event);
+    }
+}
+
 void GameScene::setActivePlayer(PlayerLogic *player)
 {
     if (cardNavigator) {
