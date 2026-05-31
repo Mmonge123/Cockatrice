@@ -19,46 +19,40 @@ void KeyboardCardNavigator::switchCardInZone(QKeyEvent *event)
 {
     // Don't check inHand flag - it's timing-dependent. Just check if we have valid player and cards.
     if (!playerLogic) {
-        qWarning() << "[KeyNav] playerLogic is NULL";
         return;
     }
     if (!currentZone) {
-        qWarning() << "[KeyNav] currentZone is NULL";
         return;
     }
     if (QApplication::activePopupWidget()) {
-        return; 
+        return;
     }
-    
+
     const CardList &zoneCards = currentZone->getCards();
     if (zoneCards.isEmpty()) {
-        qWarning() << "[KeyNav] zoneCards is EMPTY";
         return;
     }
     event->accept();
-    qWarning() << "[KeyNav] Zone size=" << zoneCards.size() << "index=" << currentlyHoveredCardIndex;
-    
+
     // Check if this is an arrow key we care about
     int keyCode = event->key();
     if (keyCode != Qt::Key_Right && keyCode != Qt::Key_Left) {
         return;
     }
-    
+
     // Calculate new index
     int newIndex = currentlyHoveredCardIndex;
     bool isInitial = (currentlyHoveredCardIndex < 0);
-    
+
     if (isInitial) {
         newIndex = 0;
-        qWarning() << "[KeyNav] INIT to 0";
     } else {
         // Validate current index is still in bounds
         if (currentlyHoveredCardIndex >= zoneCards.size()) {
-            qWarning() << "[KeyNav] Index out of bounds, reset to 0";
             currentlyHoveredCardIndex = 0;
             newIndex = 0;
         }
-        
+
         // Calculate movement
         if (keyCode == Qt::Key_Right) {
             newIndex = (currentlyHoveredCardIndex + 1) % zoneCards.size();
@@ -66,7 +60,7 @@ void KeyboardCardNavigator::switchCardInZone(QKeyEvent *event)
             newIndex = (currentlyHoveredCardIndex - 1 + zoneCards.size()) % zoneCards.size();
         }
     }
-    
+
     // Unhover old card
     if (currentlyHoveredCardIndex >= 0 && currentlyHoveredCardIndex < zoneCards.size()) {
         CardItem *oldCard = zoneCards[currentlyHoveredCardIndex];
@@ -78,7 +72,7 @@ void KeyboardCardNavigator::switchCardInZone(QKeyEvent *event)
             }
         }
     }
-    
+
     // Update index and hover new card
     currentlyHoveredCardIndex = newIndex;
     if (newIndex >= 0 && newIndex < zoneCards.size()) {
@@ -93,12 +87,7 @@ void KeyboardCardNavigator::switchCardInZone(QKeyEvent *event)
             if (isArrowModeActive) {
             createTempArrow(newCard);
             }
-            qWarning() << "[KeyNav] SUCCESS - hovering card at index" << newIndex;
-        } else {
-            qWarning() << "[KeyNav] ERROR - card at index" << newIndex << "is NULL";
         }
-    } else {
-        qWarning() << "[KeyNav] ERROR - index out of bounds";
     }
 }
 
@@ -118,7 +107,7 @@ void KeyboardCardNavigator::UnhoverCurrentCard()
     if (!playerLogic || !currentZone) {
         return;
     }
-    
+
     const CardList &zoneCards = currentZone->getCards();
     if (currentlyHoveredCardIndex >= 0 && currentlyHoveredCardIndex < zoneCards.size()) {
         CardItem *currentCard = zoneCards[currentlyHoveredCardIndex];
@@ -159,27 +148,23 @@ void KeyboardCardNavigator::createArrow(CardItem* targetCard)
 
     if (arrowOriginCard == targetCard) {
         arrowOriginCard = nullptr;
-        return; 
+        return;
     }
 
     ArrowItem::sendCreateArrowCommand(playerLogic, arrowOriginCard, targetCard, Qt::red);
-    
+
     arrowOriginCard = nullptr;
 }
-
-// In keyboard_card_navigator.cpp
 
 void KeyboardCardNavigator::startArrowMode(CardItem* originCard)
 {
     if (!originCard || !originCard->scene() || !playerLogic) return;
-    
+
     isArrowModeActive = true;
     arrowOriginCard = originCard;
 
     // Create a temporary visual arrow pointing to itself so the user knows it worked
     createTempArrow(originCard);
-    
-    qWarning() << "[KeyNav] Arrow mode STARTED.";
 }
 
 void KeyboardCardNavigator::cancelArrowMode()
@@ -190,7 +175,6 @@ void KeyboardCardNavigator::cancelArrowMode()
     }
     isArrowModeActive = false;
     arrowOriginCard = nullptr;
-    qWarning() << "[KeyNav] Arrow mode CANCELLED.";
 }
 
 
@@ -200,37 +184,37 @@ void KeyboardCardNavigator::switchZone(QKeyEvent *event)
         return;
     }
     if (QApplication::activePopupWidget()) {
-        return; 
+        return;
     }
-    
+
     int keyCode = event->key();
     if (keyCode != Qt::Key_Up && keyCode != Qt::Key_Down) {
         return;
     }
-    
+
     event->accept();
     // Build list with only the zones of interest
     QList<CardZoneLogic *> zonesList;
-    
+
     TableZoneLogic *tableZone = playerLogic->getTableZone();
     StackZoneLogic *stackZone = playerLogic->getStackZone();
     HandZoneLogic *handZone = playerLogic->getHandZone();
-    
+
     if (tableZone) zonesList.append(tableZone);
     if (stackZone) zonesList.append(stackZone);
     if (handZone) zonesList.append(handZone);
-    
+
     if (zonesList.isEmpty()) {
         return;
     }
-    
+
     // Find current zone index
     int currentZoneIndex = zonesList.indexOf(currentZone);
     if (currentZoneIndex < 0) {
         // If no current zone, start at first zone
         currentZoneIndex = 0;
     }
-    
+
     // Calculate new zone index
     int newZoneIndex = currentZoneIndex;
     if (keyCode == Qt::Key_Down) {
@@ -238,13 +222,11 @@ void KeyboardCardNavigator::switchZone(QKeyEvent *event)
     } else if (keyCode == Qt::Key_Up) {
         newZoneIndex = (currentZoneIndex - 1 + zonesList.size()) % zonesList.size();
     }
-    
+
     // Set the new zone
     CardZoneLogic *newZone = zonesList[newZoneIndex];
     setCurrentZone(newZone);
-    
+
     // Reset card index since we're in a new zone
     currentlyHoveredCardIndex = -1;
-    
-    qWarning() << "[KeyNav] Switched to zone:" << newZone->getName();
 }
